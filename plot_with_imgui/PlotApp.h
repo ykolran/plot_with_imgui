@@ -51,7 +51,7 @@ private:
 	bool _show_demo_window_imgui;
 	bool _show_main_window;
 
-	int _currentFileIndex;
+	size_t _currentFileIndex;
 	std::set<int> _selectedFields;
 	int _lastSelectedField;
 	std::vector<File> _files;

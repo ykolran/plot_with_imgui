@@ -55,11 +55,14 @@ void Plot::Draw()
                 }
                 if (col.marker != ImPlotMarker_None || col.histogram)
                     ImGui::SliderFloat("Fill", &col.alpha, 0, 1, "%.2f");
-               if (ImGui::Button("Histogram"))
+                if (!col.histogram)
                 {
-                    Plot histogram;
-                    histogram.AddCol(col.label_id, col.ys, col.color, true);
-                    PlotApp::Instance().AddPlot(histogram);
+                    if (ImGui::Button("Histogram"))
+                    {
+                        Plot histogram;
+                        histogram.AddCol(col.label_id, col.ys, col.color, true);
+                        PlotApp::Instance().AddPlot(histogram);
+                    }
                 }
                 ImPlot::EndLegendPopup();
             }
@@ -124,7 +127,7 @@ void Plot::HandleKeyPressed()
         
         int width = std::min((int)_extents.x, max_width);
         int height = std::min((int)_extents.y, max_height);
-        if (PlotApp::Instance().CaptureFramebuffer(_cursorPos.x, _cursorPos.y, width, height, pixels_rgba, nullptr))
+        if (PlotApp::Instance().CaptureFramebuffer((int)_cursorPos.x, (int)_cursorPos.y, width, height, pixels_rgba, nullptr))
         {
             CopyToClipboard(pixels_rgba, width, height, "c:\\temp\\test.png");
             SaveTextureToPNG("c:\\temp\\test.png", pixels_rgba, width, height);
@@ -197,15 +200,19 @@ void WriteHTMLToClipboard(const std::string& html) {
 
     // Lock the global memory and copy the HTML content
     char* pGlobal = static_cast<char*>(GlobalLock(hGlobal));
-    memcpy(pGlobal, html.c_str(), size);
-    GlobalUnlock(hGlobal);
+    if (pGlobal)
+    {
+        memcpy(pGlobal, html.c_str(), size);
+        GlobalUnlock(hGlobal);
 
-    // Set the HTML content to the clipboard
-    if (!SetClipboardData(cfHtml, hGlobal)) {
-        std::cerr << "Unable to set clipboard data" << std::endl;
-        GlobalFree(hGlobal);
-        CloseClipboard();
-        return;
+
+        // Set the HTML content to the clipboard
+        if (!SetClipboardData(cfHtml, hGlobal)) {
+            std::cerr << "Unable to set clipboard data" << std::endl;
+            GlobalFree(hGlobal);
+            CloseClipboard();
+            return;
+        }
     }
 
     CloseClipboard();
@@ -281,16 +288,18 @@ void WriteRTFToClipboard(const std::string& rtf) {
     }
 
     char* pGlobal = static_cast<char*>(GlobalLock(hGlobal));
-    memcpy(pGlobal, rtf.c_str(), size);
-    GlobalUnlock(hGlobal);
+    if (pGlobal)
+    {
+        memcpy(pGlobal, rtf.c_str(), size);
+        GlobalUnlock(hGlobal);
 
-    if (!SetClipboardData(cfRtf, hGlobal)) {
-        std::cerr << "Unable to set clipboard data" << std::endl;
-        GlobalFree(hGlobal);
-        CloseClipboard();
-        return;
+        if (!SetClipboardData(cfRtf, hGlobal)) {
+            std::cerr << "Unable to set clipboard data" << std::endl;
+            GlobalFree(hGlobal);
+            CloseClipboard();
+            return;
+        }
     }
-
     CloseClipboard();
     std::cout << "RTF content successfully written to the clipboard" << std::endl;
 }

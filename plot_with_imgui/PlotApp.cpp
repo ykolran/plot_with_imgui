@@ -263,6 +263,13 @@ void PlotApp::ShowMainWindow()
     ImGui::Begin("DragFilesHere", &_show_main_window);
     DragAcceptFiles((HWND)ImGui::GetWindowViewport()->PlatformHandleRaw, true);
 
+    for (auto& plot : _plots)
+    {
+        if (ImGui::Begin(plot.Name(), plot.IsOpen(), ImGuiWindowFlags_NoSavedSettings))
+            plot.Draw();
+        ImGui::End();
+    }
+
     if (ImGui::Button("PLOT") && _currentFileIndex >= 0 && _currentFileIndex < _files.size() &&
         !_selectedFields.empty())
     {
@@ -272,12 +279,9 @@ void PlotApp::ShowMainWindow()
             AddColToPlot(field, plot);
         }
         _plots.emplace_back(plot);
-    }
-
-    for (auto& plot : _plots)
-    {
-        ImGui::Begin(plot.Name(), plot.IsOpen());
-        plot.Draw();
+        ImGui::SetNextWindowSize(ImVec2(800, 600));
+        if (ImGui::Begin(plot.Name(), plot.IsOpen(), ImGuiWindowFlags_NoSavedSettings))
+            plot.Draw();
         ImGui::End();
     }
 
@@ -415,8 +419,11 @@ void PlotApp::CreateRenderTarget()
 {
     ID3D11Texture2D* pBackBuffer;
     _pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
-    _pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &_mainRenderTargetView);
-    pBackBuffer->Release();
+    if (pBackBuffer)
+    {
+        _pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &_mainRenderTargetView);
+        pBackBuffer->Release();
+    }
 }
 
 void PlotApp::CleanupRenderTarget()

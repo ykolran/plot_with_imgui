@@ -40,7 +40,7 @@ public:
 	void AddCol(std::string name, std::vector<double> ys, ImVec4 color = ImVec4(0,0,0,-1), bool histogram = false) 
 	{ 
 		_columns.push_back({name, ys, color.w == -1 ? ImPlot::GetColormapColor(static_cast<int>(_columns.size())) : color,
-			0.5f, ImPlotMarker_Circle,	1.0f, false, true, histogram, false, false, false, (int)ceil(1.0 + log2(ys.size())) });
+			0.5f, ImPlotMarker_Circle,	1.0f, false, true, histogram, false, false, false, (int)ceil(1.0 + log2((double)ys.size())) });
 	}
 	void HandleKeyPressed();
 	void AddDataTip();
