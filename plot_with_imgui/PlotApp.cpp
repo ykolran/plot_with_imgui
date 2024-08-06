@@ -172,6 +172,9 @@ int PlotApp::MainLoop()
     // Our state
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+    ImPlot::GetInputMap().Select = ImGuiMouseButton_Left;
+    ImPlot::GetInputMap().SelectCancel = ImGuiMouseButton_Right;
+    ImPlot::GetInputMap().Pan = ImGuiMouseButton_Right;
 
     DragAcceptFiles(hwnd, true);
     // Main loop

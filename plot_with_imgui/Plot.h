@@ -36,6 +36,7 @@ public:
 		Counter++;
 		sprintf_s(_name, "Figure %d", Counter);
 		_open = true;
+		_initialized = false;
 	}
 	void AddCol(std::string name, std::vector<double> ys, ImVec4 color = ImVec4(0,0,0,-1), bool histogram = false) 
 	{ 
@@ -60,6 +61,7 @@ private:
 	std::vector<Column> _columns;
 	char _name[10];
 	bool _open;
+	bool _initialized;
     std::vector<std::pair<ImPlotPoint, ImVec4>> _annotations;
 	ImVec2 _cursorPos;
 	ImVec2 _extents;

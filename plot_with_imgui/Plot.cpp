@@ -25,8 +25,14 @@ void Plot::Draw()
     _cursorPos = ImGui::GetCursorPos();
     _extents = ImGui::GetContentRegionAvail();
 
-    if (ImPlot::BeginPlot("##Plot", _extents))
+    if (ImPlot::BeginPlot("My Title##Plot", _extents))
     {
+        if (!_initialized)
+        {
+            ImPlot::SetupAxes("Time", "Diff [Kg]", ImPlotAxisFlags_EditableLabel, ImPlotAxisFlags_EditableLabel);
+            _initialized = true;
+        }
+
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
             HandleKeyPressed();
 
