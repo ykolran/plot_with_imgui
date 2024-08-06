@@ -434,12 +434,9 @@ void PlotApp::CleanupRenderTarget()
     if (_mainRenderTargetView) { _mainRenderTargetView->Release(); _mainRenderTargetView = nullptr; }
 }
 
-
 bool PlotApp::CaptureFramebuffer(int x, int y, int w, int h, unsigned int* pixels_rgba, void* user_data)
 {
     ImGuiViewport* viewport = ImGui::GetWindowViewport();
-    return ImGuiApp_ImplWin32DX11_CaptureFramebuffer(_mainRenderTargetView,
-        _pd3dDevice, _pd3dDeviceContext, viewport,
-        x, y, w, h, pixels_rgba, user_data);
+    return ImGuiApp_ImplWin32DX11_CaptureFramebuffer(viewport, x, y, w, h, pixels_rgba, user_data);
 }
 
