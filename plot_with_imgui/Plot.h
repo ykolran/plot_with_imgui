@@ -28,6 +28,13 @@ struct Column
 	int bins;
 };
 
+struct Annotation
+{
+	ImPlotPoint point;
+	ImVec4 color;
+	ImVec2 offset;
+};
+
 class Plot
 {
 public:
@@ -62,7 +69,7 @@ private:
 	char _name[10];
 	bool _open;
 	bool _initialized;
-    std::vector<std::pair<ImPlotPoint, ImVec4>> _annotations;
+    std::vector<Annotation> _annotations;
 	ImVec2 _cursorPos;
 	ImVec2 _extents;
 

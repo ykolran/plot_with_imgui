@@ -36,8 +36,27 @@ void Plot::Draw()
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
             HandleKeyPressed();
 
-        for (auto& vec : _annotations)
-            ImPlot::Annotation(vec.first.x, vec.first.y, vec.second, ImVec2(10, 10), true);
+        for (int i=0; i<_annotations.size(); i++)
+        {
+            auto& vec = _annotations[i];
+            ImPlot::Annotation(vec.point.x, vec.point.y, vec.color, vec.offset, true);
+
+            // allow to drag the annotation
+            ImVec2 pos, size;
+            ImPlot::GetAnnotationRect(i, pos, size);
+            /*ImVec2 dragPixel(pos.x + size.x / 2, pos.y + size.y / 2);
+            ImPlotPoint dragPoint = ImPlot::PixelsToPlot(dragPixel);
+            double x = dragPoint.x;
+            double y = dragPoint.y;*/
+            //ImPlot::DragPoint(i, &x, &y, ImVec4(0, 0, 0, 0));
+            ImPlotPoint startPoint = ImPlot::PixelsToPlot(pos);
+            ImPlotPoint endPoint = ImPlot::PixelsToPlot(ImVec2(pos.x + size.x, pos.y + size.y));
+            ImPlot::DragRect(i, &startPoint.x, &startPoint.y, &endPoint.x, &endPoint.y, ImVec4(0, 0, 0, 0), ImPlotDragToolFlags_NoResize);
+            ImVec2 posNew = ImPlot::PlotToPixels(startPoint);
+            //ImVec2 dragPixelNew = ImPlot::PlotToPixels(ImPlotPoint(x, y));
+            vec.offset.x += posNew.x - pos.x;
+            vec.offset.y += posNew.y - pos.y;
+        }
 
         for (auto& col : _columns)
         {
@@ -143,26 +162,31 @@ void Plot::HandleKeyPressed()
 
 void Plot::AddDataTip()
 {
-    auto mousePos = ImPlot::GetPlotMousePos();
+    auto mousePos = ImGui::GetMousePos();
     double dist = std::numeric_limits<double>::max();
-    ImPlotPoint point;
-    ImVec4 color;
+    Annotation anno;
     for (int col = 0; col < _columns.size(); col++)
     {
-        for (int i = 0; i < _columns[col].ys.size(); i++)
+        if (_columns[col].show)
         {
-            double currDist = (i - mousePos.x) * (i - mousePos.x) + (_columns[col].ys[i] - mousePos.y) * (_columns[col].ys[i] - mousePos.y);
-            if (currDist < dist)
+            for (int i = 0; i < _columns[col].ys.size(); i++)
             {
-                dist = currDist;
-                point.x = i;
-                point.y = _columns[col].ys[i];
-                color = ImPlot::GetColormapColor(col);
+                ImPlotPoint point(i, _columns[col].ys[i]);
+                ImVec2 pointPixel = ImPlot::PlotToPixels(point);
+                double currDist = (pointPixel.x - mousePos.x) * (pointPixel.x - mousePos.x) + (pointPixel.y - mousePos.y) * (pointPixel.y - mousePos.y);
+                if (currDist < dist)
+                {
+                    dist = currDist;
+                    anno.point = point;
+                    anno.color = ImPlot::GetColormapColor(col);
+                    anno.offset = ImVec2(mousePos.x - pointPixel.x, mousePos.y - pointPixel.y);
+
+                }
             }
         }
     }
 
-    _annotations.push_back(std::make_pair(point, color));
+    _annotations.push_back(anno);
 }
 
 // Helper function to convert BGRA to RGBA
