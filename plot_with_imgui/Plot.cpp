@@ -33,13 +33,12 @@ void Plot::Draw()
             _initialized = true;
         }
 
-        if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
-            HandleKeyPressed();
+        int deleteAnnotationIdx = -1;
 
         for (int i=0; i<_annotations.size(); i++)
         {
             auto& vec = _annotations[i];
-            ImPlot::Annotation(vec.point.x, vec.point.y, vec.color, vec.offset, true);
+            ImPlot::Annotation(vec.point.x, vec.point.y, vec.color, vec.offset, true, "%s", vec.text);
 
             // allow to drag the annotation
             ImVec2 pos, size;
@@ -51,13 +50,39 @@ void Plot::Draw()
             //ImPlot::DragPoint(i, &x, &y, ImVec4(0, 0, 0, 0));
             ImPlotPoint startPoint = ImPlot::PixelsToPlot(pos);
             ImPlotPoint endPoint = ImPlot::PixelsToPlot(ImVec2(pos.x + size.x, pos.y + size.y));
-            ImPlot::DragRect(i, &startPoint.x, &startPoint.y, &endPoint.x, &endPoint.y, ImVec4(0, 0, 0, 0), ImPlotDragToolFlags_NoResize);
-            ImVec2 posNew = ImPlot::PlotToPixels(startPoint);
-            //ImVec2 dragPixelNew = ImPlot::PlotToPixels(ImPlotPoint(x, y));
-            vec.offset.x += posNew.x - pos.x;
-            vec.offset.y += posNew.y - pos.y;
+            bool clicked = false;
+            bool hovered = false;
+            if (ImPlot::DragRect(i, &startPoint.x, &startPoint.y, &endPoint.x, &endPoint.y, ImVec4(0, 0, 0, 0), ImPlotDragToolFlags_NoResize, &clicked, &hovered))
+            {
+                ImVec2 posNew = ImPlot::PlotToPixels(startPoint);
+                //ImVec2 dragPixelNew = ImPlot::PlotToPixels(ImPlotPoint(x, y));
+                vec.offset.x += posNew.x - pos.x;
+                vec.offset.y += posNew.y - pos.y;
+
+            }
+            else if (clicked && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+            {
+                ImGui::OpenPopup("Annotation_PopUp");
+                _currAnnotation = &vec;
+            }
+            else if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Middle))
+            {
+                deleteAnnotationIdx = i;
+            }
         }
 
+        if (deleteAnnotationIdx >= 0)
+            _annotations.erase(_annotations.begin() + deleteAnnotationIdx);
+
+        if (ImGui::BeginPopup("Annotation_PopUp"))
+        {
+            ImGui::SeparatorText(_currAnnotation->label);
+            ImGui::InputTextMultiline("##Annotation", _currAnnotation->text, sizeof(_currAnnotation->text));
+            ImGui::EndPopup();
+        }
+        else if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
+            HandleKeyPressed();
+        
         for (auto& col : _columns)
         {
             if (ImPlot::BeginLegendPopup(col.label_id.c_str()))
@@ -180,7 +205,8 @@ void Plot::AddDataTip()
                     anno.point = point;
                     anno.color = ImPlot::GetColormapColor(col);
                     anno.offset = ImVec2(mousePos.x - pointPixel.x, mousePos.y - pointPixel.y);
-
+                    sprintf_s(anno.label, sizeof(anno.text), "%s\n%g,%g", _columns[col].label_id.c_str(), anno.point.x, anno.point.y);
+                    sprintf_s(anno.text, sizeof(anno.text), "%s\n%g,%g", _columns[col].label_id.c_str(), anno.point.x, anno.point.y);
                 }
             }
         }

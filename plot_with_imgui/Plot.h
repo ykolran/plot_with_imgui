@@ -33,6 +33,8 @@ struct Annotation
 	ImPlotPoint point;
 	ImVec4 color;
 	ImVec2 offset;
+	char label[256];
+	char text[256];
 };
 
 class Plot
@@ -70,6 +72,7 @@ private:
 	bool _open;
 	bool _initialized;
     std::vector<Annotation> _annotations;
+	Annotation* _currAnnotation;
 	ImVec2 _cursorPos;
 	ImVec2 _extents;
 
