@@ -30,6 +30,7 @@ void Plot::Draw()
         if (!_initialized)
         {
             ImPlot::SetupAxes("Time", "Diff [Kg]", ImPlotAxisFlags_EditableLabel, ImPlotAxisFlags_EditableLabel);
+            ImPlot::SetupLegend(ImPlotLocation_NorthWest, ImPlotLegendFlags_Markers);
             _initialized = true;
         }
 
